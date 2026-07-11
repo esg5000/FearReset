@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0E1420">
+<title>Fear Reset AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#0E1420; --panel:#17202F; --panel2:#1E2A3C; --line:#2A3850;
+  --ink:#E8DCC8; --ink-dim:#9AA7B8; --amber:#F2A65A; --amber-deep:#D98A3D;
+  --calm:#8FBF9F; --alert:#E07A5F; --radius:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:linear-gradient(180deg,#080C14 0%,#0E1420 45%,#131C2C 78%,#1A2334 100%) fixed;
+  color:var(--ink);
+  font-family:'Inter',system-ui,sans-serif; font-size:15px; line-height:1.55;
+  overscroll-behavior:none;
+}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.7}
+#app{position:relative;z-index:2}
+#horizonGlow{position:fixed;left:0;right:0;bottom:0;height:150px;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse 120% 100% at 50% 115%, rgba(242,166,90,.13), transparent 65%)}
+h1,h2,h3,.display{font-family:'Bricolage Grotesque',sans-serif}
+h1{font-size:1.75rem;font-weight:700;letter-spacing:-.02em;
+  background:linear-gradient(120deg,var(--ink) 55%,var(--amber) 130%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+h2{font-size:1.25rem;font-weight:600;margin-bottom:.5rem}
+h3{font-size:1.05rem;font-weight:600}
+.eyebrow{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:600}
+.wordmark{display:flex;align-items:center;gap:8px;font-family:'Bricolage Grotesque';font-weight:700;
+  font-size:.82rem;letter-spacing:.22em;color:var(--ink);margin-bottom:10px}
+.wordmark .wm-ai{color:var(--amber);letter-spacing:.1em}
+.wm-orb{width:11px;height:11px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #FFE7C2, var(--amber) 60%, var(--amber-deep));
+  box-shadow:0 0 12px 3px rgba(242,166,90,.55);animation:orbGlow 4s ease-in-out infinite}
+.dim{color:var(--ink-dim)} .small{font-size:.82rem}
+#app{max-width:560px;margin:0 auto;padding:18px 16px 120px;min-height:100%}
+
+/* ground line motif */
+.groundline{position:fixed;left:0;right:0;bottom:64px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--amber-deep) 30%,var(--amber) 50%,var(--amber-deep) 70%,transparent);
+  background-size:200% 100%;opacity:.4;pointer-events:none;z-index:5;
+  animation:shimmer 9s linear infinite}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+
+/* nav */
+nav{position:fixed;bottom:0;left:0;right:0;background:rgba(14,20,32,.96);backdrop-filter:blur(10px);
+  border-top:1px solid var(--line);display:flex;z-index:20;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:none;color:var(--ink-dim);font-family:'Inter';font-size:.68rem;
+  padding:10px 2px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button .ic{font-size:1.15rem;line-height:1}
+nav button.active{color:var(--amber)}
+nav button .ic{transition:transform .25s cubic-bezier(.3,1.4,.5,1), text-shadow .25s}
+nav button.active .ic{transform:translateY(-2px) scale(1.12);text-shadow:0 0 14px rgba(242,166,90,.8)}
+nav button::after{content:'';width:4px;height:4px;border-radius:50%;background:var(--amber);
+  opacity:0;transform:scale(0);transition:.25s;margin-top:1px}
+nav button.active::after{opacity:1;transform:scale(1)}
+
+/* cards & controls */
+.card{background:linear-gradient(160deg,var(--panel) 0%,#141D2B 100%);
+  border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;
+  box-shadow:0 6px 24px -12px rgba(0,0,0,.55), inset 0 1px 0 rgba(232,220,200,.04);
+  opacity:0;transform:translateY(14px);animation:cardIn .5s cubic-bezier(.2,.7,.3,1) forwards}
+.card:nth-child(2){animation-delay:.05s}.card:nth-child(3){animation-delay:.1s}
+.card:nth-child(4){animation-delay:.15s}.card:nth-child(5){animation-delay:.2s}
+.card:nth-child(6){animation-delay:.25s}.card:nth-child(7){animation-delay:.3s}
+@keyframes cardIn{to{opacity:1;transform:none}}
+.card.calm{border-color:rgba(143,191,159,.4)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--amber);color:#1A1208;
+  border:none;border-radius:12px;padding:13px 20px;font-family:'Inter';font-weight:600;font-size:.95rem;cursor:pointer;width:100%}
+.btn{transition:transform .12s, box-shadow .2s, filter .2s;box-shadow:0 4px 18px -8px rgba(242,166,90,.5)}
+.btn:active{transform:scale(.96);filter:brightness(1.12)}
+.btn.ghost{box-shadow:none}
+.btn.calmbtn{box-shadow:0 4px 18px -8px rgba(143,191,159,.5)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.calmbtn{background:var(--calm);color:#0F1A14}
+.btn.danger{background:var(--alert);color:#1A0E08}
+.btn.sm{width:auto;padding:9px 14px;font-size:.85rem}
+.row{display:flex;gap:10px}.row .btn{flex:1}
+label.field{display:block;font-size:.8rem;color:var(--ink-dim);margin:12px 0 5px}
+input[type=text],textarea,select,input[type=password]{width:100%;background:var(--panel2);border:1px solid var(--line);
+  border-radius:10px;color:var(--ink);padding:11px;font-family:'Inter';font-size:.92rem}
+textarea{min-height:84px;resize:vertical}
+input[type=range]{width:100%;accent-color:var(--amber);height:34px}
+
+/* SUD scale */
+.sudwrap{margin:10px 0}
+.sudval{font-family:'Bricolage Grotesque';font-size:2.6rem;font-weight:700;text-align:center;line-height:1}
+.sudlabel{text-align:center;font-size:.78rem;color:var(--ink-dim);margin-bottom:6px}
+
+/* orb — signature element */
+.orbstage{position:relative;height:260px;
+  background:radial-gradient(ellipse at 50% 130%, rgba(242,166,90,.09), transparent 55%),
+             radial-gradient(ellipse at 50% 120%, #16233A 0%, #0B111C 75%);
+  border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);margin-bottom:14px;
+  box-shadow:inset 0 0 60px rgba(0,0,0,.5)}
+.orb{position:absolute;width:46px;height:46px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #FFE7C2, var(--amber) 55%, var(--amber-deep));
+  box-shadow:0 0 30px 8px rgba(242,166,90,.45), 0 0 70px 24px rgba(242,166,90,.14);
+  top:50%;left:50%;transform:translate(-50%,-50%)}
+.orb.idle{animation:orbFloat 6s ease-in-out infinite, orbGlow 4s ease-in-out infinite}
+@keyframes orbFloat{0%,100%{margin-top:0}50%{margin-top:-9px}}
+@keyframes orbGlow{0%,100%{box-shadow:0 0 30px 8px rgba(242,166,90,.4),0 0 70px 24px rgba(242,166,90,.12)}
+  50%{box-shadow:0 0 40px 12px rgba(242,166,90,.55),0 0 90px 32px rgba(242,166,90,.2)}}
+.orbtrail{position:absolute;width:46px;height:46px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle, rgba(242,166,90,.28), transparent 70%);
+  top:50%;transform:translateY(-50%)}
+.orb.calmmode{background:radial-gradient(circle at 35% 30%, #DFF5E6, var(--calm) 55%, #5E9B77);
+  box-shadow:0 0 34px 10px rgba(143,191,159,.4)}
+.stagehint{position:absolute;bottom:10px;left:0;right:0;text-align:center;font-size:.75rem;color:var(--ink-dim)}
+
+/* emergency */
+#panicBtn{position:fixed;top:14px;right:14px;z-index:30;background:var(--panel);border:1px solid var(--alert);
+  color:var(--alert);border-radius:999px;padding:8px 14px;font-weight:600;font-size:.8rem;cursor:pointer}
+.overlay{position:fixed;inset:0;z-index:40;display:none;overflow-y:auto;padding:24px 18px 40px;
+  background:radial-gradient(ellipse 130% 60% at 50% 110%, rgba(143,191,159,.12), transparent 60%), rgba(8,12,20,.97)}
+.overlay.show{display:block}
+
+/* misc */
+.pill{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:999px;
+  padding:4px 11px;font-size:.75rem;color:var(--ink-dim);margin:0 6px 6px 0}
+.pill.done{border-color:var(--calm);color:var(--calm)}
+.pill.active{border-color:var(--amber);color:var(--amber)}
+.progressbar{height:6px;background:var(--panel2);border-radius:99px;overflow:hidden;margin:8px 0}
+.progressbar>div{height:100%;background:var(--amber);border-radius:99px;transition:width .4s}
+.bignum{font-family:'Bricolage Grotesque';font-size:2rem;font-weight:700}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--panel2);border-radius:12px;padding:12px;text-align:center}
+.stat .bignum{font-size:1.5rem}
+canvas.chart{width:100%;height:170px;background:var(--panel2);border-radius:12px}
+.msg{background:var(--panel2);border-radius:12px;padding:12px;margin:8px 0;font-size:.9rem;white-space:pre-wrap}
+.msg.ai{border-left:3px solid var(--amber)}
+.bodymap{display:block;margin:0 auto}
+.bodymap .zone{fill:#233248;stroke:var(--line);cursor:pointer;transition:fill .2s}
+.bodymap .zone.marked{fill:var(--alert)}
+.screen{display:none}.screen.show{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}#stars{display:none}.card{opacity:1;transform:none}}
+.ladder-rung{display:flex;align-items:center;gap:12px;padding:12px;background:var(--panel2);
+  border:1px solid var(--line);border-radius:12px;margin-bottom:8px;cursor:pointer}
+.ladder-rung.done{border-color:var(--calm)}
+.ladder-rung.locked{opacity:.45}
+.rungnum{font-family:'Bricolage Grotesque';font-weight:700;color:var(--amber);min-width:26px;text-align:center}
+.checkmark{margin-left:auto;color:var(--calm);font-size:1.1rem}
+.phase-timer{font-family:'Bricolage Grotesque';font-size:3rem;font-weight:700;text-align:center;margin:10px 0}
+hr{border:none;border-top:1px solid var(--line);margin:14px 0}
+</style>
+</head>
+<body>
+<button id="panicBtn" onclick="App.emergency()">◉ Reset</button>
+<canvas id="stars"></canvas>
+<div id="horizonGlow"></div>
+<div class="groundline"></div>
+<div id="app"></div>
+
+<nav id="nav">
+  <button data-s="home" class="active"><span class="ic">⌂</span>Home</button>
+  <button data-s="session"><span class="ic">◉</span>Session</button>
+  <button data-s="ladder"><span class="ic">⋮</span>Ladder</button>
+  <button data-s="body"><span class="ic">✚</span>Body</button>
+  <button data-s="dash"><span class="ic">◫</span>Progress</button>
+  <button data-s="coach"><span class="ic">✦</span>Coach</button>
+</nav>
+
+<div class="overlay" id="emergencyOverlay"></div>
+
+<script>
+/* ============ AMBIENT STARFIELD ============ */
+const Stars = {
+  start(){
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const c=document.getElementById('stars'), x=c.getContext('2d');
+    let W,H,pts=[];
+    const size=()=>{ W=c.width=innerWidth; H=c.height=innerHeight;
+      pts=Array.from({length:70},()=>({x:Math.random()*W,y:Math.random()*H*.8,
+        r:Math.random()*1.4+.3, tw:Math.random()*6.28, sp:.06+Math.random()*.12})); };
+    size(); addEventListener('resize',size);
+    let lastT=0;
+    const tick=(t)=>{
+      if(t-lastT>50){ lastT=t;
+        x.clearRect(0,0,W,H);
+        for(const p of pts){
+          p.x-=p.sp; if(p.x<-2){p.x=W+2;p.y=Math.random()*H*.8;}
+          p.tw+=.04;
+          const a=.25+.45*Math.abs(Math.sin(p.tw));
+          x.fillStyle=`rgba(232,220,200,${a})`;
+          x.beginPath(); x.arc(p.x,p.y,p.r,0,7); x.fill();
+        }
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+};
+
+/* ============ STORAGE ADAPTER (claude.ai artifact OR deployed) ============ */
+const Store = {
+  mem:{},
+  async get(k){ 
+    try{ if(window.storage){ const r=await window.storage.get('hr:'+k); return r?JSON.parse(r.value):null; } }catch(e){}
+    try{ const v=localStorage.getItem('hr:'+k); return v?JSON.parse(v):null; }catch(e){}
+    return this.mem[k]??null;
+  },
+  async set(k,v){
+    const s=JSON.stringify(v);
+    try{ if(window.storage){ await window.storage.set('hr:'+k,s); return; } }catch(e){}
+    try{ localStorage.setItem('hr:'+k,s); return; }catch(e){}
+    this.mem[k]=v;
+  }
+};
+
+/* ============ APP STATE ============ */
+const App = {
+  data:{ sessions:[], ladder:{}, settings:{apiKey:''}, coachLog:[] },
+  screen:'home',
+  async init(){
+    for(const k of ['sessions','ladder','settings','coachLog']){
+      const v=await Store.get(k); if(v) this.data[k]=v;
+    }
+    document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>this.go(b.dataset.s));
+    this.go('home');
+  },
+  async save(){ for(const k of ['sessions','ladder','settings','coachLog']) await Store.set(k,this.data[k]); },
+  needsCheckin(){
+    const ss=this.data.sessions.filter(x=>x.type!=='ladder');
+    if(!ss.length) return false;
+    const last=ss[ss.length-1];
+    if(last.checkedIn) return false;
+    const hrs=(Date.now()-new Date(last.date).getTime())/36e5;
+    return hrs>=10;
+  },
+  go(s){
+    this.screen=s;
+    document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.s===s));
+    Bilateral.stop(); Breath.stop(); Voice.stop();
+    if(typeof Hypno!=='undefined'&&Hypno.timer){ clearTimeout(Hypno.timer); }
+    if(typeof Dream!=='undefined'&&Dream.timer){ clearTimeout(Dream.timer); }
+    const R={home:Views.home,session:Views.session,ladder:Views.ladder,body:Views.body,dash:Views.dash,coach:Views.coach};
+    document.getElementById('app').innerHTML=R[s]();
+    if(s==='dash') Charts.drawAll();
+    if(s==='body') BodyMap.render('bmView', this.latestMarks(), false);
+  },
+  latestMarks(){ const s=[...this.data.sessions].reverse().find(x=>x.bodyMarks&&x.bodyMarks.length); return s?s.bodyMarks:[]; },
+  emergency(){ Session.abortToGrounding(true); },
+  fmtDate(iso){ return new Date(iso).toLocaleDateString(undefined,{month:'short',day:'numeric'}); }
+};
+
+/* ============ SUD SLIDER COMPONENT ============ */
+function sudSlider(id,val=3){
+  return `<div class="sudwrap"><div class="sudval" id="${id}v">${val}</div>
+  <div class="sudlabel">0 = totally calm · 10 = worst fear imaginable</div>
+  <input type="range" min="0" max="10" step="1" value="${val}" id="${id}"
+    oninput="document.getElementById('${id}v').textContent=this.value"></div>`;
+}
+function sudVal(id){ return parseInt(document.getElementById(id).value); }
+
+/* ============ BILATERAL STIMULATION ENGINE ============ */
+const Bilateral = {
+  running:false, raf:null, audio:null, panner:null, osc:null, gain:null,
+  speed:1.0, useAudio:true, useHaptic:true, lastSide:0, dir:1, x:0.5,
+  start(stageId, orbId){
+    this.stop(); this.running=true; this.x=0.5; this.dir=1; this.lastSide=0;
+    const stage=document.getElementById(stageId), orb=document.getElementById(orbId);
+    if(!stage||!orb) return;
+    orb.classList.remove('idle');
+    this.trails=[];
+    for(let i=0;i<4;i++){ const t=document.createElement('div'); t.className='orbtrail';
+      t.style.opacity=(0.5-(i*0.11)); t.style.scale=String(1-(i*0.14)); stage.appendChild(t); this.trails.push({el:t,x:0.5}); }
+    if(this.useAudio){
+      try{
+        this.audio=new (window.AudioContext||window.webkitAudioContext)();
+        this.osc=this.audio.createOscillator(); this.osc.frequency.value=196; this.osc.type='sine';
+        this.gain=this.audio.createGain(); this.gain.gain.value=0;
+        this.panner=this.audio.createStereoPanner();
+        this.osc.connect(this.gain); this.gain.connect(this.panner); this.panner.connect(this.audio.destination);
+        this.osc.start();
+      }catch(e){ this.audio=null; }
+    }
+    let last=performance.now();
+    const step=(t)=>{
+      if(!this.running) return;
+      const dt=(t-last)/1000; last=t;
+      this.x += this.dir * this.speed * dt; // full sweep ≈ 1/speed sec
+      if(this.x>=1){ this.x=1; this.dir=-1; this.edge(1); }
+      if(this.x<=0){ this.x=0; this.dir=1; this.edge(-1); }
+      const w=stage.clientWidth-46;
+      orb.style.left=(23 + this.x*w)+'px'; orb.style.transform='translateY(-50%)'; orb.style.top='50%';
+      if(this.trails){ let prev=this.x;
+        for(const tr of this.trails){ tr.x+= (prev-tr.x)*0.35; tr.el.style.left=(23+tr.x*w)+'px'; prev=tr.x; } }
+      if(this.panner) this.panner.pan.value=(this.x*2-1);
+      this.raf=requestAnimationFrame(step);
+    };
+    this.raf=requestAnimationFrame(step);
+  },
+  edge(side){
+    if(this.audio&&this.gain){
+      const t=this.audio.currentTime;
+      this.gain.gain.cancelScheduledValues(t);
+      this.gain.gain.setValueAtTime(0.001,t);
+      this.gain.gain.exponentialRampToValueAtTime(0.25,t+0.02);
+      this.gain.gain.exponentialRampToValueAtTime(0.001,t+0.18);
+    }
+    if(this.useHaptic&&navigator.vibrate) navigator.vibrate(35);
+  },
+  stop(){
+    this.running=false;
+    if(this.raf) cancelAnimationFrame(this.raf);
+    if(this.audio){ try{this.audio.close();}catch(e){} this.audio=null; }
+    if(this.trails){ this.trails.forEach(t=>t.el.remove()); this.trails=null; }
+  }
+};
+
+/* ============ BREATHING PACER (orb pulse) ============ */
+const Breath = {
+  timer:null,
+  start(orbId, hintId, pattern=[4,0,6,0]){ // inhale, hold, exhale, hold
+    this.stop();
+    const orb=document.getElementById(orbId), hint=document.getElementById(hintId);
+    if(!orb) return;
+    orb.classList.add('calmmode'); orb.classList.remove('idle');
+    orb.style.left='50%'; orb.style.top='50%'; orb.style.transform='translate(-50%,-50%) scale(1)';
+    orb.style.transition='transform 4s ease-in-out';
+    let phase=0;
+    const names=['Breathe in…','Hold','Breathe out slowly…','Hold'];
+    const run=()=>{
+      while(pattern[phase]===0) phase=(phase+1)%4;
+      const secs=pattern[phase];
+      if(hint) hint.textContent=names[phase]+' '+secs+'s';
+      orb.style.transition=`transform ${secs}s ease-in-out`;
+      orb.style.transform='translate(-50%,-50%) scale('+(phase===0?1.8:phase===2?0.9:orbScale())+')';
+      function orbScale(){ return phase===1?1.8:0.9; }
+      phase=(phase+1)%4;
+      this.timer=setTimeout(run,secs*1000);
+    };
+    run();
+  },
+  stop(){ if(this.timer) clearTimeout(this.timer); this.timer=null; }
+};
+
+/* ============ VOICE GUIDANCE (speech synthesis, no files) ============ */
+const Voice = {
+  _v:null,
+  init(){ if('speechSynthesis' in window){ const pick=()=>{ const vs=speechSynthesis.getVoices();
+    this._v=vs.find(v=>/en[-_]/i.test(v.lang)&&/female|samantha|karen|serena|natural/i.test(v.name))||vs.find(v=>/en[-_]/i.test(v.lang))||null; };
+    pick(); speechSynthesis.onvoiceschanged=pick; } },
+  get on(){ return App.data.settings.voice!==false; },
+  speak(text, slow){
+    if(!this.on || !('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.rate=slow?0.82:0.92; u.pitch=1;
+    if(this._v) u.voice=this._v;
+    speechSynthesis.speak(u);
+  },
+  stop(){ if('speechSynthesis' in window) speechSynthesis.cancel(); }
+};
+
+/* ============ WAKE LOCK ============ */
+const Wake = {
+  lock:null,
+  async on(){ try{ if('wakeLock' in navigator) this.lock=await navigator.wakeLock.request('screen'); }catch(e){} },
+  off(){ try{ this.lock&&this.lock.release(); }catch(e){} this.lock=null; }
+};
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&(Session.active||Enjoy.active)) Wake.on(); });
+
+/* ============ SESSION ENGINE ============ */
+const Session = {
+  active:null, timer:null, tickI:null,
+  /* ---- shared safety gate: rating >= 8 pauses into grounding ---- */
+  checkGate(v){
+    if(v>=8){ this.pauseForGrounding(); return true; }
+    return false;
+  },
+  begin(type){
+    Wake.on();
+    this.active={ type, start:Date.now(), sudBefore:null, sudPeak:0, sudDuring:[], sudAfter:null,
+      recoverySec:null, notes:'', reflections:{}, bodyMarks:[], date:new Date().toISOString() };
+    if(type==='recall') this.recallStep0();
+    if(type==='rewind') this.rewindStep0();
+    if(type==='bilateral') this.blsStep0();
+  },
+  ui(html){ document.getElementById('app').innerHTML=html; window.scrollTo(0,0); },
+
+  /* ================= 1. GUIDED MEMORY RECALL ================= */
+  recallStep0(){
+    this.ui(`<div class="eyebrow">Guided recall · Step 1 of 5</div>
+    <h1>Before we start</h1>
+    <div class="card"><p>You'll hold the original memory in mind for four short blocks of <b>45 seconds</b>, with a check-in between each. The session has a hard cap and always ends with a calming phase.</p>
+    <p class="small dim" style="margin-top:8px">If your fear hits 8 or higher at any point, the app pauses everything and moves you to grounding. That's not failure — that's the protocol working.</p></div>
+    <div class="card"><h3>Rate your fear right now, just thinking about starting</h3>${sudSlider('sudB',3)}</div>
+    <button class="btn" onclick="Session.recallPrep()">Continue</button>
+    <button class="btn ghost" style="margin-top:10px" onclick="App.go('session')">Not today</button>`);
+  },
+  recallPrep(){
+    this.active.sudBefore=sudVal('sudB');
+    if(this.checkGate(this.active.sudBefore)) return;
+    this.ui(`<div class="eyebrow">Guided recall · Step 2 of 5</div>
+    <h1>Ground first</h1>
+    <div class="orbstage" id="stg"><div class="orb idle" id="orb"></div><div class="stagehint" id="hint"></div></div>
+    <div class="card calm"><p>Feet flat on the floor. Feel the chair holding your weight. Follow the orb for six breaths — you're safe, at ground level, right now.</p></div>
+    <button class="btn calmbtn" onclick="Session.recallBlock(1)">I'm grounded — begin block 1</button>`);
+    Breath.start('orb','hint');
+    Voice.speak('Feet flat on the floor. Feel the chair holding your weight. Follow the orb for six slow breaths. You are safe, at ground level, right now.', true);
+  },
+  recallBlock(n){
+    Breath.stop();
+    const total=4;
+    let secs=45;
+    this.ui(`<div class="eyebrow">Guided recall · Block ${n} of ${total}</div>
+    <h1>Hold the memory</h1>
+    <div class="phase-timer" id="ptimer">45</div>
+    <div class="progressbar"><div id="pbar" style="width:0%"></div></div>
+    <div class="card"><p>Bring up the Twin Towers memory. Notice what you see, hear, and feel — <b>you are observing it, not reliving it</b>. You're sitting safely in ${new Date().getFullYear()}, remembering.</p>
+    <p class="small dim" style="margin-top:8px">Let the feelings be there without pushing them away. They're just activation, and activation passes.</p></div>
+    <button class="btn danger" onclick="Session.pauseForGrounding()">Too much — ground me now</button>`);
+    Voice.speak('Bring up the memory now. Notice what you see, hear, and feel. You are observing it, not reliving it. You are sitting safely, today, remembering. Let the feelings be there. They are just activation, and activation passes.', true);
+    this.timer && clearInterval(this.timer);
+    this.timer=setInterval(()=>{
+      secs--;
+      const pt=document.getElementById('ptimer'); if(!pt){clearInterval(this.timer);return;}
+      pt.textContent=secs;
+      document.getElementById('pbar').style.width=((45-secs)/45*100)+'%';
+      if(secs<=0){ clearInterval(this.timer); this.recallCheckin(n); }
+    },1000);
+  },
+  recallCheckin(n){
+    if(navigator.vibrate) navigator.vibrate(80);
+    this.ui(`<div class="eyebrow">Guided recall · Check-in</div>
+    <h1>Where's the fear right now?</h1>
+    <div class="card">${sudSlider('sudD',this.active.sudDuring.slice(-1)[0]??this.active.sudBefore)}</div>
+    ${n<4?`<button class="btn" onclick="Session.recallNext(${n})">Log it & continue</button>`:
+    `<button class="btn" onclick="Session.recallNext(4)">Log it & move to calming</button>`}
+    <button class="btn ghost" style="margin-top:10px" onclick="Session.recallSkipToCalm()">End exposure early (still ends calmly)</button>`);
+    Voice.speak('Pause. Where is the fear right now, zero to ten?');
+  },
+  recallNext(n){
+    const v=sudVal('sudD');
+    this.active.sudDuring.push(v);
+    this.active.sudPeak=Math.max(this.active.sudPeak,v);
+    if(this.checkGate(v)) return;
+    if(n<4) this.recallBlock(n+1); else this.calmPhase();
+  },
+  recallSkipToCalm(){ const v=sudVal('sudD'); if(!isNaN(v)){this.active.sudDuring.push(v);this.active.sudPeak=Math.max(this.active.sudPeak,v);} this.calmPhase(); },
+
+  /* ================= 3. REWIND VISUALIZATION ================= */
+  rewindStep0(){
+    this.ui(`<div class="eyebrow">Rewind · Step 1 of 6</div>
+    <h1>The cinema</h1>
+    <div class="card"><p>This works by watching the memory from a <b>detached</b> perspective — twice removed. You never step inside it while it's playing forward.</p></div>
+    <div class="card"><h3>Fear right now</h3>${sudSlider('sudB',3)}</div>
+    <button class="btn" onclick="Session.rewindRelax()">Continue</button>
+    <button class="btn ghost" style="margin-top:10px" onclick="App.go('session')">Not today</button>`);
+  },
+  rewindRelax(){
+    this.active.sudBefore=sudVal('sudB');
+    if(this.checkGate(this.active.sudBefore)) return;
+    this.ui(`<div class="eyebrow">Rewind · Step 2 of 6</div>
+    <h1>Settle in your safe place</h1>
+    <div class="orbstage" id="stg"><div class="orb idle" id="orb"></div><div class="stagehint" id="hint"></div></div>
+    <div class="card calm"><p>Picture somewhere you feel completely at ease — real or imagined. Spend a minute there. Notice the light, the sounds, the temperature.</p></div>
+    <button class="btn calmbtn" onclick="Session.rewindWatch(1)">I'm settled — continue</button>`);
+    Breath.start('orb','hint');
+    Voice.speak('Picture somewhere you feel completely at ease. Notice the light. The sounds. The temperature. Spend a minute there, breathing with the orb.', true);
+  },
+  rewindWatch(pass){
+    Breath.stop();
+    this.ui(`<div class="eyebrow">Rewind · Pass ${pass} of 3 — watch forward</div>
+    <h1>Projection booth</h1>
+    <div class="card"><p>Imagine you're sitting in a cinema. Now float up into the <b>projection booth</b> — you can see yourself sitting in the seat below, watching the screen.</p>
+    <p style="margin-top:8px">From the booth, watch <b>that version of you</b> watch the memory play on screen: small, in black and white, starting from a safe moment <i>before</i> anything happened, through to a safe moment <i>after</i> it ended.</p>
+    <p class="small dim" style="margin-top:8px">You stay in the booth the whole time. Take as long as you need.</p></div>
+    <button class="btn" onclick="Session.rewindReverse(${pass})">The film has finished — rewind it</button>
+    <button class="btn danger" style="margin-top:10px" onclick="Session.pauseForGrounding()">Too much — ground me</button>`);
+    Voice.speak('Imagine you are sitting in a cinema. Now float up into the projection booth, so you can see yourself sitting in the seat below. From the booth, watch that version of you watch the memory play on the screen. Small. Black and white. Starting from a safe moment before anything happened, through to a safe moment after it ended. You stay in the booth the whole time. Take as long as you need. Press the button when the film has finished.', true);
+  },
+  rewindReverse(pass){
+    this.ui(`<div class="eyebrow">Rewind · Pass ${pass} of 3 — rewind</div>
+    <h1>Now rewind it — fast</h1>
+    <div class="card"><p>From the final safe frame, step <b>into</b> the still image on screen — and experience the whole memory rewinding at high speed, in a couple of seconds: everything flying backwards, sounds backwards, all the way to the safe moment before it began.</p>
+    <p class="small dim" style="margin-top:8px">Rewinding is where the memory loses its grip. It becomes footage you control, not an event you're stuck in.</p></div>
+    <div class="card"><h3>Quick check — fear level?</h3>${sudSlider('sudD',this.active.sudDuring.slice(-1)[0]??this.active.sudBefore)}</div>
+    ${pass<3?`<button class="btn" onclick="Session.rewindLoop(${pass})">Done — next pass</button>`:
+    `<button class="btn" onclick="Session.rewindLoop(3)">Done — move to calming</button>`}`);
+    Voice.speak('From the final safe frame, step into the still image on the screen. And now, rewind. Fast. The whole memory flying backwards in a couple of seconds, sounds backwards, all the way to the safe moment before it began. Then rate your fear below.', true);
+  },
+  rewindLoop(pass){
+    const v=sudVal('sudD');
+    this.active.sudDuring.push(v); this.active.sudPeak=Math.max(this.active.sudPeak,v);
+    if(this.checkGate(v)) return;
+    if(pass<3) this.rewindWatch(pass+1); else this.calmPhase();
+  },
+
+  /* ================= 2. STANDALONE BILATERAL ================= */
+  blsStep0(){
+    this.ui(`<div class="eyebrow">Bilateral stimulation</div>
+    <h1>Follow the orb</h1>
+    <div class="card"><h3>Fear right now</h3>${sudSlider('sudB',3)}</div>
+    <div class="orbstage" id="stg"><div class="orb idle" id="orb"></div><div class="stagehint">Eyes follow the orb · tones alternate ears · phone pulses</div></div>
+    <div class="card">
+      <label class="field">Speed — <span id="spdv">1.0</span> sweeps/sec</label>
+      <input type="range" min="0.4" max="2" step="0.1" value="1" oninput="Bilateral.speed=parseFloat(this.value);document.getElementById('spdv').textContent=this.value">
+      <label class="field">Duration</label>
+      <select id="blsDur"><option value="60">1 minute</option><option value="120" selected>2 minutes</option><option value="180">3 minutes</option><option value="300">5 minutes</option></select>
+      <div class="row" style="margin-top:10px">
+        <button class="btn sm ghost" onclick="Bilateral.useAudio=!Bilateral.useAudio;this.textContent=Bilateral.useAudio?'Audio: on':'Audio: off'">Audio: on</button>
+        <button class="btn sm ghost" onclick="Bilateral.useHaptic=!Bilateral.useHaptic;this.textContent=Bilateral.useHaptic?'Vibrate: on':'Vibrate: off'">Vibrate: on</button>
+      </div>
+    </div>
+    <button class="btn" id="blsGo" onclick="Session.blsRun()">Start</button>`);
+  },
+  blsRun(){
+    this.active.sudBefore=this.active.sudBefore??sudVal('sudB');
+    const dur=parseInt(document.getElementById('blsDur').value);
+    Bilateral.start('stg','orb');
+    const btn=document.getElementById('blsGo');
+    btn.textContent='Stop early'; btn.onclick=()=>{Bilateral.stop();this.calmPhase();};
+    this.timer && clearTimeout(this.timer);
+    this.timer=setTimeout(()=>{ Bilateral.stop(); this.calmPhase(); }, dur*1000);
+  },
+
+  /* ================= SHARED CALMING END-PHASE ================= */
+  calmPhase(){
+    Bilateral.stop(); this.timer&&clearTimeout(this.timer); this.timer&&clearInterval(this.timer);
+    this.calmStart=Date.now();
+    this.ui(`<div class="eyebrow">Calming phase</div>
+    <h1>Come back down</h1>
+    <div class="orbstage" id="stg"><div class="orb idle" id="orb"></div><div class="stagehint" id="hint"></div></div>
+    <div class="card calm"><p>Picture yourself standing on solid ground — warm evening, lights on the street, nothing above you but open sky. Every exhale lets your shoulders drop a little more.</p>
+    <p class="small dim" style="margin-top:8px">Stay here as long as you like. Continue only when your fear is close to where it started, or lower.</p></div>
+    <button class="btn calmbtn" onclick="Session.afterRating()">I feel settled — continue</button>`);
+    Breath.start('orb','hint',[4,2,7,0]);
+    Voice.speak('Well done. Now come back down. Picture yourself standing on solid ground. A warm evening. Lights on the street. Nothing above you but open sky. Every exhale lets your shoulders drop a little more. Stay here as long as you like.', true);
+  },
+  afterRating(){
+    Breath.stop();
+    this.active.recoverySec=Math.round((Date.now()-this.calmStart)/1000);
+    this.ui(`<div class="eyebrow">Wrapping up</div>
+    <h1>Fear level now</h1>
+    <div class="card">${sudSlider('sudA',Math.max(0,(this.active.sudBefore??3)-1))}</div>
+    <div class="card"><h3>Body check</h3><p class="small dim">Tap anywhere fear showed up physically during this session.</p>
+    <div id="bmSession"></div></div>
+    <button class="btn" onclick="Session.reflect()">Continue</button>`);
+    BodyMap.render('bmSession', this.active.bodyMarks, true, (marks)=>{ this.active.bodyMarks=marks; });
+  },
+  reflect(){
+    this.active.sudAfter=sudVal('sudA');
+    const qs=[
+      'What was different about the memory this time, if anything?',
+      'What thought or belief showed up most strongly?',
+      'Anything you noticed in your body worth remembering?'
+    ];
+    this.ui(`<div class="eyebrow">Reflection</div>
+    <h1>Two minutes of honesty</h1>
+    ${qs.map((q,i)=>`<div class="card"><h3 class="small" style="color:var(--ink)">${q}</h3><textarea id="rq${i}" placeholder="Voice-to-text works fine here…"></textarea></div>`).join('')}
+    <button class="btn" onclick="Session.finish()">Save session</button>`);
+  },
+  async finish(){
+    for(let i=0;i<3;i++){ const el=document.getElementById('rq'+i); if(el) this.active.reflections['q'+i]=el.value; }
+    App.data.sessions.push(this.active);
+    await App.save(); Wake.off();
+    const s=this.active, delta=s.sudBefore!=null&&s.sudAfter!=null ? s.sudBefore-s.sudAfter : null;
+    this.ui(`<div class="eyebrow">Session saved</div>
+    <h1>${delta>0?'That’s movement.':delta===0?'Held steady — that counts.':'Logged. Some sessions stir things up first.'}</h1>
+    <div class="statgrid" style="margin:14px 0">
+      <div class="stat"><div class="bignum">${s.sudBefore??'–'} → ${s.sudAfter??'–'}</div><div class="small dim">fear before → after</div></div>
+      <div class="stat"><div class="bignum">${s.sudPeak}</div><div class="small dim">peak during</div></div>
+    </div>
+    <button class="btn" onclick="Coach.debrief()">Debrief with the AI coach</button>
+    <button class="btn ghost" style="margin-top:10px" onclick="App.go('home')">Done for today</button>`);
+    this.activeSaved=this.active; this.active=null;
+  },
+
+  /* ================= EMERGENCY / GROUNDING ================= */
+  pauseForGrounding(fromPanic){
+    Bilateral.stop(); Breath.stop(); this.timer&&clearInterval(this.timer); this.timer&&clearTimeout(this.timer);
+    this.abortToGrounding(fromPanic);
+  },
+  abortToGrounding(fromPanic){
+    const o=document.getElementById('emergencyOverlay');
+    o.classList.add('show');
+    o.innerHTML=`<div style="max-width:560px;margin:0 auto">
+    <div class="eyebrow" style="color:var(--calm)">Grounding</div>
+    <h1>You're safe. Right here, right now.</h1>
+    <div class="orbstage" id="egStg"><div class="orb calmmode idle" id="egOrb"></div><div class="stagehint" id="egHint"></div></div>
+    <div class="card calm"><h3>5 · 4 · 3 · 2 · 1</h3>
+    <p style="margin-top:6px">Name, out loud or in your head:</p>
+    <p style="margin-top:6px"><b>5</b> things you can see<br><b>4</b> things you can feel touching you<br><b>3</b> things you can hear<br><b>2</b> things you can smell<br><b>1</b> slow breath all the way out</p></div>
+    <div class="card"><p class="small dim">Press your feet into the floor. Feel the weight of the phone in your hand. The memory is in the past — your body is here.</p></div>
+    <button class="btn calmbtn" onclick="Session.groundingDone()">I'm steadier now</button>
+    </div>`;
+    Breath.start('egOrb','egHint',[4,2,7,0]);
+    Voice.speak('You are safe. Right here, right now. Press your feet into the floor. Name five things you can see. Four things you can feel touching you. Three things you can hear. Two things you can smell. And take one slow breath, all the way out.', true);
+  },
+  groundingDone(){
+    Breath.stop(); Voice.stop();
+    document.getElementById('emergencyOverlay').classList.remove('show');
+    if(this.active){ this.calmPhase(); } else { App.go('home'); }
+  }
+};
+
+/* ============ HEIGHT LADDER (12 rungs) ============ */
+const LADDER=[
+ {t:'Imagine standing on a step stool',m:'imagination'},
+ {t:'Imagine looking down a full staircase',m:'imagination'},
+ {t:'Imagine standing on a 2nd-floor balcony',m:'imagination'},
+ {t:'View photos taken from a rooftop',m:'photos'},
+ {t:'View photos looking down from a tall building',m:'photos'},
+ {t:'Watch video walking near a railing on a high floor',m:'video'},
+ {t:'Watch drone footage rising over a city',m:'video'},
+ {t:'Watch glass-elevator and skywalk POV videos',m:'video'},
+ {t:'Real world: stand on a 2nd-floor balcony or parking deck',m:'real'},
+ {t:'Real world: high hotel room or high-floor restaurant, behind glass (enclosed)',m:'real'},
+ {t:'Real world: glass elevator ride, repeat until boring (enclosed)',m:'real'},
+ {t:'Real world: pedestrian bridge, pause and look over the side (open-air)',m:'real'},
+ {t:'Real world: stadium upper deck, stay one full quarter (open-air)',m:'real'},
+ {t:'Real world: enclosed observation deck, at your own pace',m:'real'},
+ {t:'Real world: open-air rooftop bar \u2014 the Miami test',m:'real'},
+ {t:'Summit: open rooftop event, stay the whole time, enjoy-mode running',m:'real'}
+];
+
+/* ============ BODY MAP ============ */
+const BodyMap = {
+  zones:[
+    {id:'head',cx:100,cy:34,rx:20,ry:24,label:'Head'},
+    {id:'throat',cx:100,cy:66,rx:12,ry:9,label:'Throat'},
+    {id:'chest',cx:100,cy:97,rx:30,ry:22,label:'Chest'},
+    {id:'stomach',cx:100,cy:140,rx:26,ry:20,label:'Stomach'},
+    {id:'larm',cx:58,cy:110,rx:11,ry:38,label:'Left arm'},
+    {id:'rarm',cx:142,cy:110,rx:11,ry:38,label:'Right arm'},
+    {id:'lhand',cx:55,cy:160,rx:10,ry:11,label:'Left hand'},
+    {id:'rhand',cx:145,cy:160,rx:10,ry:11,label:'Right hand'},
+    {id:'lleg',cx:84,cy:215,rx:13,ry:48,label:'Left leg'},
+    {id:'rleg',cx:116,cy:215,rx:13,ry:48,label:'Right leg'}
+  ],
+  render(elId, marked=[], interactive=false, onChange){
+    const el=document.getElementById(elId); if(!el) return;
+    const set=new Set(marked);
+    el.innerHTML=`<svg class="bodymap" width="200" height="275" viewBox="0 0 200 275">
+      ${this.zones.map(z=>`<ellipse class="zone ${set.has(z.id)?'marked':''}" data-z="${z.id}"
+        cx="${z.cx}" cy="${z.cy}" rx="${z.rx}" ry="${z.ry}"><title>${z.label}</title></ellipse>`).join('')}
+    </svg>`;
+    if(interactive){
+      el.querySelectorAll('.zone').forEach(zn=>zn.onclick=()=>{
+        const id=zn.dataset.z;
+        set.has(id)?set.delete(id):set.add(id);
+        zn.classList.toggle('marked');
+        onChange&&onChange([...set]);
+      });
+    }
+  }
+};
+
+/* ============ CHARTS (canvas, no libs) ============ */
+const Charts = {
+  line(id, series, color, maxY=10){
+    const c=document.getElementById(id); if(!c) return;
+    const dpr=window.devicePixelRatio||1, W=c.clientWidth, H=c.clientHeight;
+    c.width=W*dpr; c.height=H*dpr;
+    const x=c.getContext('2d'); x.scale(dpr,dpr);
+    x.clearRect(0,0,W,H);
+    x.strokeStyle='#2A3850'; x.lineWidth=1;
+    for(let i=0;i<=2;i++){ const y=14+(H-28)*i/2; x.beginPath();x.moveTo(30,y);x.lineTo(W-10,y);x.stroke();
+      x.fillStyle='#9AA7B8'; x.font='10px Inter'; x.fillText(String(Math.round(maxY-maxY*i/2)),8,y+3); }
+    if(!series.length){ x.fillStyle='#9AA7B8'; x.fillText('No sessions yet',W/2-38,H/2); return; }
+    const px=i=>30+(W-46)*(series.length===1?0.5:i/(series.length-1));
+    const py=v=>14+(H-28)*(1-v/maxY);
+    const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const drawTo=(frac)=>{
+      x.save();
+      x.beginPath(); x.rect(0,0,30+(W-30)*frac,H); x.clip();
+      x.strokeStyle=color; x.lineWidth=2.5; x.lineJoin='round'; x.beginPath();
+      series.forEach((v,i)=>i?x.lineTo(px(i),py(v)):x.moveTo(px(0),py(v))); x.stroke();
+      series.forEach((v,i)=>{ x.fillStyle=color; x.beginPath(); x.arc(px(i),py(v),3.5,0,7); x.fill(); });
+      x.restore();
+    };
+    if(reduce){ drawTo(1); return; }
+    const t0=performance.now();
+    const anim=(t)=>{ const f=Math.min(1,(t-t0)/700);
+      const e=1-Math.pow(1-f,3); drawTo(e);
+      if(f<1) requestAnimationFrame(anim); };
+    requestAnimationFrame(anim);
+  },
+  drawAll(){
+    const ss=App.data.sessions;
+    this.line('chFear', ss.filter(s=>s.sudAfter!=null).map(s=>s.sudAfter), '#F2A65A', 10);
+    const rec=ss.filter(s=>s.recoverySec!=null).map(s=>Math.round(s.recoverySec/60*10)/10);
+    this.line('chRec', rec, '#8FBF9F', Math.max(5,...rec,1));
+    this.line('chEnj', ss.filter(s=>s.enjoy!=null).map(s=>s.enjoy), '#8FBF9F', 10);
+  }
+};
+
+/* ============ AI COACH (features 4 + 9) ============ */
+const Coach = {
+  buildContext(){
+    const ss=App.data.sessions.slice(-20).map(s=>({
+      date:s.date.slice(0,10), type:s.type, before:s.sudBefore, peak:s.sudPeak, after:s.sudAfter,
+      recoverySec:s.recoverySec, body:s.bodyMarks, reflections:s.reflections, rung:s.ladderRung??null, enjoy:s.enjoy??null, win:s.win??null, nextDay:s.nextDay??null, hypnoGoal:s.goalName??null, hypnoNote:s.reflections?.note??null
+    }));
+    return JSON.stringify(ss);
+  },
+  async call(userPrompt, sys){
+    const body={ model:'claude-sonnet-4-6', max_tokens:1000,
+      system:sys, messages:[{role:'user',content:userPrompt}] };
+    const key=App.data.settings.apiKey;
+    let r;
+    if(key){
+      const headers={'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
+      r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers,body:JSON.stringify(body)});
+    } else {
+      r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    }
+    const d=await r.json();
+    if(!d.content) throw new Error(d.error?.message||'API unavailable');
+    return d.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
+  },
+  sys(){ return `You are a supportive coach inside Fear Reset AI, a personal self-help app the user built. Its primary target is their fear of heights, rooted in a Twin Towers memory; it also covers habit change via self-hypnosis and nightmare rework via dream rehearsal. You have their full session history. Be warm, direct, concise (under 180 words). Notice trends: fear-after scores, recovery times, recurring body locations, recurring thoughts in reflections. Celebrate subtle improvements with specific numbers. If data suggests worsening or repeated 8+ peaks, gently recommend slowing down and considering a trauma-trained therapist (EMDR/rewind are clinician techniques). Never diagnose. Suggest ONE concrete next session (recall, rewind, bilateral, a specific ladder rung 1-16, or enjoy-mode on a rung whose fear-after is 4 or below) based on the data. The end goal is not just less fear but genuine enjoyment of heights: once fear-after scores sit at 4 or below on a rung, nudge toward enjoy-mode (arousal reappraisal, awe, savoring). Track whether enjoyment scores are climbing and reference their win-journal moments back to them. Weigh nextDay check-in data (sleep, intrusions, reactivity) heavily — it is a better signal than in-session scores. If two or more sessions show worse sleep or repeated intrusions afterward, firmly recommend pausing recall/rewind work and consulting an EMDR-trained therapist. The app also includes self-hypnosis sessions for habit goals (gym persistence, snacking, sleep, focus, custom) — track reps per goal, remind them consistency over 2-3 weeks is what makes suggestions stick, and note if a goal has been abandoned mid-streak. Dream rehearsal (IRT) sessions target the user's old recurring nightmare: stuck frozen atop skyscrapers, long terrifying search for a bridge and elevator down — but note every dream resolved with them reaching the ground. Track heightDream answers in nextDay data: old-style dreams returning under stress is a signal to increase rehearsal frequency; the rewritten version appearing in real dreams is a major win — celebrate it loudly. KEY ANCHOR MEMORY: the user genuinely ENJOYED a height once — a rooftop nightclub on the 55th-56th floor in Montreal, dancing, socializing, having a great time. The lesson: their fear dissolves when attention is outward and engaged (social, active) and spikes when idle and seated (Miami rooftop pools, stadium nosebleed seats). Use Montreal as proof the wiring exists, and steer real-world ladder rungs toward ACTIVE, SOCIAL height situations over passive seated ones.`; },
+  async debrief(){
+    App.go('coach');
+    const box=document.getElementById('coachMsgs');
+    box.innerHTML='<div class="msg dim">Reading your session history…</div>';
+    try{
+      const txt=await this.call(`Session history JSON: ${this.buildContext()}\n\nI just finished a session. Debrief me: what changed vs previous sessions, any patterns in my reflections/body map, and what should my next session be?`, this.sys());
+      App.data.coachLog.push({role:'ai',text:txt,date:new Date().toISOString()});
+      await App.save(); App.go('coach');
+    }catch(e){
+      box.innerHTML=`<div class="msg">Coach unavailable (${e.message}). Your session is saved — patterns below are computed locally.</div>`+this.localPatterns();
+    }
+  },
+  async ask(){
+    const inp=document.getElementById('coachInp'); const q=inp.value.trim(); if(!q) return;
+    App.data.coachLog.push({role:'me',text:q,date:new Date().toISOString()});
+    inp.value=''; App.go('coach');
+    try{
+      const txt=await this.call(`Session history JSON: ${this.buildContext()}\n\nUser asks: ${q}`, this.sys());
+      App.data.coachLog.push({role:'ai',text:txt,date:new Date().toISOString()});
+    }catch(e){
+      App.data.coachLog.push({role:'ai',text:'(offline) '+e.message});
+    }
+    await App.save(); App.go('coach');
+  },
+  localPatterns(){
+    const ss=App.data.sessions.filter(s=>s.sudAfter!=null);
+    if(ss.length<2) return '<div class="msg">Complete two or more sessions and trends will appear here.</div>';
+    const f=ss.map(s=>s.sudAfter), half=Math.floor(f.length/2);
+    const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+    const d=(avg(f.slice(0,half))-avg(f.slice(half))).toFixed(1);
+    const bodyCount={}; App.data.sessions.forEach(s=>(s.bodyMarks||[]).forEach(b=>bodyCount[b]=(bodyCount[b]||0)+1));
+    const topBody=Object.entries(bodyCount).sort((a,b)=>b[1]-a[1])[0];
+    return `<div class="msg ai">Local pattern check:\n• Fear-after trend: ${d>0?'down '+d+' points':'up '+Math.abs(d)+' points'} (recent half vs first half)\n• Most frequent body location: ${topBody?topBody[0]+' ('+topBody[1]+'×)':'none marked'}\n• Sessions logged: ${App.data.sessions.length}</div>`;
+  },
+  suggestNext(){
+    const ss=App.data.sessions;
+    if(!ss.length) return {label:'Start with Bilateral stimulation — learn the tool while calm',go:"Session.begin('bilateral')"};
+    const last=ss[ss.length-1];
+    if(last.sudPeak>=8) return {label:'Last session peaked high — do a calm Bilateral-only session',go:"Session.begin('bilateral')"};
+    if(last.sudAfter<=2 && last.type!=='ladder'){
+      const rung=(Object.values(App.data.ladder).filter(r=>r.done).length)+1;
+      if(rung<=16) return {label:`You're settling well — try Ladder rung ${rung}`,go:`Views.openRung(${rung-1})`};
+    }
+    if(last.type==='recall') return {label:'Next: Rewind session — build on yesterday’s recall',go:"Session.begin('rewind')"};
+    return {label:'Next: Guided recall with check-ins',go:"Session.begin('recall')"};
+  }
+};
+
+/* ============ SELF-HYPNOSIS ============ */
+const HYPNO_GOALS={
+  gym:{name:'Stay longer at the gym',sug:[
+    'Each set I complete feeds the next one. Finishing feels better than stopping.',
+    'When the urge to leave arrives, I notice it, and I begin one more exercise. The urge fades as I move.',
+    'I am someone who finishes workouts. My body trusts me to stay, and it grows stronger because I do.']},
+  chips:{name:'Stop eating potato chips',sug:[
+    'Chips are just grease and salt in a loud bag. My interest in them is fading, session by session.',
+    'When I see chips, I feel neutral, the way I feel about food that was never mine. I reach for water or real food instead.',
+    'I ate them out of habit, and the habit is dissolving. I eat food that leaves me feeling good an hour later.']},
+  sleep:{name:'Better sleep routine',sug:[
+    'When I decide to sleep, my body follows. The phone goes down, and heaviness rises.',
+    'Night is for rest. Every exhale in bed sinks me deeper into the mattress.',
+    'I wake up rested because I protect my sleep the way I protect my work.']},
+  focus:{name:'Deep focus on work',sug:[
+    'When I sit down to build, the world narrows to the work. Distraction knocks and I simply do not answer.',
+    'One task, finished, then the next. Finishing is my default state.',
+    'My attention is mine. I place it where I choose, and it stays.']},
+  custom:{name:'Custom goal',sug:[]}
+};
+const Hypno={
+  goal:null,steps:[],idx:0,timer:null,active:null,
+  begin(){
+    document.getElementById('app').innerHTML=`<div class="eyebrow" style="color:var(--calm)">Self-hypnosis</div>
+    <h1>Pick what to work on</h1>
+    ${Object.entries(HYPNO_GOALS).map(([k,g])=>`<div class="ladder-rung" onclick="Hypno.setup('${k}')">
+      <div class="rungnum">◈</div><div>${g.name}</div></div>`).join('')}
+    <div class="card"><p class="small dim">About 8 minutes. Somewhere you won't be interrupted, seated or lying down, volume on. You stay aware and in control the whole time — hypnosis is focused attention, not unconsciousness. It always ends with a count-up.</p></div>`;
+    window.scrollTo(0,0);
+  },
+  setup(k){
+    this.goal=k;
+    if(k==='custom'){
+      document.getElementById('app').innerHTML=`<div class="eyebrow" style="color:var(--calm)">Self-hypnosis · Custom</div>
+      <h1>Write your suggestions</h1>
+      <div class="card"><p class="small">Rules for suggestions that land: <b>present tense</b> ("I finish" not "I will try"), <b>positive framing</b> (what you do, not what you avoid), and <b>specific</b>. One per line, up to three.</p>
+      <textarea id="cSug" placeholder="I close the laptop at 10pm and my mind closes with it.&#10;..."></textarea></div>
+      <button class="btn calmbtn" onclick="Hypno.buildCustom()">Continue</button>
+      <button class="btn ghost" style="margin-top:10px" onclick="Hypno.begin()">Back</button>`;
+      return;
+    }
+    this.run(HYPNO_GOALS[k].sug);
+  },
+  buildCustom(){
+    const lines=document.getElementById('cSug').value.split('\n').map(x=>x.trim()).filter(Boolean).slice(0,3);
+    if(!lines.length){ alert('Write at least one suggestion.'); return; }
+    HYPNO_GOALS.custom.sug=lines;
+    this.run(lines);
+  },
+  run(sug){
+    this.active={type:'hypno',goal:this.goal,goalName:HYPNO_GOALS[this.goal].name,date:new Date().toISOString(),
+      sudBefore:null,sudPeak:0,sudAfter:null,sudDuring:[],recoverySec:null,bodyMarks:[],reflections:{}};
+    Wake.on();
+    const S=[];
+    S.push({t:'Get comfortable. Let your eyes rest on the orb. Keep watching it as you listen.',w:9});
+    S.push({t:'Take a slow breath in... and let it go all the way out. Again... in... and all the way out. With every exhale, your eyelids grow heavier.',w:16});
+    S.push({t:'Notice your forehead softening. Your jaw unclenching. Your shoulders dropping away from your ears. A warm heaviness moving down your arms, into your hands.',w:16});
+    S.push({t:'When your eyes want to close, let them close. The orb is still there behind your eyelids.',w:10});
+    S.push({t:'Now I will count down from ten to one, and each number takes you one step deeper along a warm, quiet path. Ten... nine... deeper with every step... eight... seven... six... halfway there, heavy and calm... five... four... three... nearly there... two... and one. Deep, calm, and completely focused.',w:38});
+    for(let round=1;round<=3;round++){
+      S.push({t:'Listen, and let this settle in.',w:5});
+      sug.forEach(x=>S.push({t:x,w:Math.max(8,Math.ceil(x.length/12))}));
+    }
+    S.push({t:'Now see it. Watch yourself, tomorrow, doing exactly this — easily, naturally, like it was always true. Notice how it feels in your body when you follow through. Hold that feeling.',w:20});
+    S.push({t:'That feeling is yours now. Your deeper mind keeps working on this long after we finish.',w:9});
+    S.push({t:'In a moment I will count from one to five, and at five your eyes open, fully alert, feeling refreshed. One... energy returning to your fingers and toes. Two... breathing deepens. Three... shoulders and neck awake. Four... eyes ready to open. And five — eyes open, wide awake, feeling excellent.',w:30});
+    this.steps=S; this.idx=0;
+    document.getElementById('app').innerHTML=`<div class="eyebrow" style="color:var(--calm)">${HYPNO_GOALS[this.goal].name}</div>
+    <div class="orbstage" id="stg" style="height:300px"><div class="orb calmmode" id="orb"></div></div>
+    <div class="card calm"><p id="hypText" style="min-height:64px">Starting…</p></div>
+    <div class="progressbar"><div id="hypBar" style="width:0%"></div></div>
+    <button class="btn ghost" onclick="Hypno.emerge()">End early (counts you up first)</button>`;
+    Breath.start('orb',null,[5,0,7,0]);
+    window.scrollTo(0,0);
+    this.next();
+  },
+  next(){
+    if(this.idx>=this.steps.length){ this.finish(); return; }
+    const st=this.steps[this.idx];
+    const el=document.getElementById('hypText'); if(!el){ this.stopAll(); return; }
+    el.textContent=st.t;
+    document.getElementById('hypBar').style.width=(this.idx/this.steps.length*100)+'%';
+    Voice.speak(st.t,true);
+    this.idx++;
+    this.timer=setTimeout(()=>this.next(), st.w*1000);
+  },
+  emerge(){
+    clearTimeout(this.timer); Voice.stop();
+    this.idx=this.steps.length-1; // jump to count-up step
+    this.next();
+  },
+  stopAll(){ clearTimeout(this.timer); Voice.stop(); Breath.stop(); Wake.off(); },
+  async finish(){
+    this.stopAll();
+    App.data.sessions.push(this.active);
+    await App.save();
+    document.getElementById('app').innerHTML=`<div class="eyebrow" style="color:var(--calm)">Session saved</div>
+    <h1>Wide awake, feeling excellent.</h1>
+    <div class="card"><h3 class="small">One line before you go — how deep did you get, and anything you noticed?</h3>
+    <textarea id="hypNote"></textarea>
+    <button class="btn sm calmbtn" style="margin-top:10px" onclick="Hypno.saveNote()">Save note</button></div>
+    <div class="card"><p class="small dim">Repetition is the whole game — daily or near-daily reps for two to three weeks per goal. The coach tracks reps per goal on the dashboard.</p></div>
+    <button class="btn ghost" onclick="App.go('home')">Done</button>`;
+    this.lastSaved=this.active; this.active=null;
+  },
+  async saveNote(){
+    const last=App.data.sessions[App.data.sessions.length-1];
+    if(last&&last.type==='hypno'){ last.reflections.note=document.getElementById('hypNote').value; await App.save(); }
+    const b=event.target; b.textContent='Saved ✓';
+  }
+};
+
+/* ============ DREAM REHEARSAL (Imagery Rehearsal Therapy) ============ */
+const Dream={
+  timer:null,steps:[],idx:0,
+  begin(){
+    const rw=App.data.settings.dreamRewrite;
+    if(!rw){ this.setup(); return; }
+    document.getElementById('app').innerHTML=`<div class="eyebrow" style="color:var(--calm)">Dream rehearsal</div>
+    <h1>Your rewritten dream</h1>
+    <div class="card"><p class="small" style="white-space:pre-wrap">${rw.replace(/</g,'&lt;')}</p></div>
+    <button class="btn calmbtn" onclick="Dream.rehearse()">Rehearse it now (~4 min)</button>
+    <button class="btn ghost" style="margin-top:10px" onclick="Dream.setup()">Edit the rewrite</button>`;
+    window.scrollTo(0,0);
+  },
+  setup(){
+    const cur=App.data.settings.dreamRewrite||`I'm on the rooftop of a skyscraper at night — 55 floors up, like that club in Montreal. Music is playing. I'm relaxed, talking, laughing. I walk to the edge rail and take in the city lights below — steady, curious, enjoying it. When I'm ready to leave, I stroll across the bridge with one hand loose on the rail, step into the elevator, and ride down smooth and easy. Ground floor. I walk out grinning.`;
+    document.getElementById('app').innerHTML=`<div class="eyebrow" style="color:var(--calm)">Dream rehearsal · Setup</div>
+    <h1>Rewrite the dream</h1>
+    <div class="card"><p class="small">Take the recurring dream — the skyscraper, the frozen panic, the long search for the way down — and rewrite it <b>any way you want</b>. You own the script now. Rules: written in first person, present tense, and it must feel <i>good</i>, not just tolerable. Change anything: you can be steady, the bridge can be short, the elevator can be right there, the rooftop can be a party.</p></div>
+    <div class="card"><h3 class="small">Your version (a Montreal-flavored draft is started for you — make it yours)</h3>
+    <textarea id="dreamTxt" style="min-height:170px">${cur}</textarea></div>
+    <button class="btn calmbtn" onclick="Dream.save()">Save rewrite</button>
+    <button class="btn ghost" style="margin-top:10px" onclick="App.go('session')">Back</button>`;
+    window.scrollTo(0,0);
+  },
+  async save(){
+    const t=document.getElementById('dreamTxt').value.trim();
+    if(t.length<40){ alert('Give it a few more sentences — vivid detail is what makes rehearsal work.'); return; }
+    App.data.settings.dreamRewrite=t; await App.save(); this.begin();
+  },
+  rehearse(){
+    Wake.on();
+    const rw=App.data.settings.dreamRewrite;
+    const S=[];
+    S.push({t:'Settle in. Eyes on the orb, breathing with it. Three slow breaths.',w:14});
+    S.push({t:'Now close your eyes, and step into your version of the dream. Not watching it — inside it, first person.',w:10});
+    S.push({t:rw,w:Math.max(20,Math.ceil(rw.length/11))});
+    S.push({t:'Run it again, slower this time. Add the senses: the temperature of the air up there. The sounds. What your hands are touching. The feeling in your legs — steady, planted.',w:26});
+    S.push({t:'Notice the best single moment in it. The view, the music, the smooth ride down. Stay in that moment and let it get brighter and louder.',w:18});
+    S.push({t:'One more time, from the top, at full speed — the whole rewritten dream, ending on the ground, feeling great.',w:22});
+    S.push({t:'Good. That version is now on file. Your sleeping mind reaches for rehearsed material — this is what it finds. Open your eyes when you are ready.',w:12});
+    this.steps=S; this.idx=0;
+    document.getElementById('app').innerHTML=`<div class="eyebrow" style="color:var(--calm)">Rehearsing</div>
+    <div class="orbstage" id="stg" style="height:280px"><div class="orb calmmode" id="orb"></div></div>
+    <div class="card calm"><p id="drText" style="min-height:64px">Starting…</p></div>
+    <div class="progressbar"><div id="drBar" style="width:0%"></div></div>
+    <button class="btn ghost" onclick="Dream.finish(true)">End early</button>`;
+    Breath.start('orb',null,[5,0,7,0]);
+    window.scrollTo(0,0);
+    this.next();
+  },
+  next(){
+    if(this.idx>=this.steps.length){ this.finish(); return; }
+    const st=this.steps[this.idx];
+    const el=document.getElementById('drText'); if(!el){ clearTimeout(this.timer); return; }
+    el.textContent=st.t;
+    document.getElementById('drBar').style.width=(this.idx/this.steps.length*100)+'%';
+    Voice.speak(st.t,true);
+    this.idx++;
+    this.timer=setTimeout(()=>this.next(), st.w*1000);
+  },
+  async finish(early){
+    clearTimeout(this.timer); Voice.stop(); Breath.stop(); Wake.off();
+    App.data.sessions.push({type:'dream',date:new Date().toISOString(),sudBefore:null,sudPeak:0,sudAfter:null,
+      sudDuring:[],recoverySec:null,bodyMarks:[],reflections:{},early:!!early});
+    await App.save();
+    document.getElementById('app').innerHTML=`<div class="eyebrow" style="color:var(--calm)">Saved</div>
+    <h1>Rehearsed.</h1>
+    <div class="card"><p class="small dim">The protocol that shifts recurring nightmares: a few minutes of vivid rehearsal daily, especially in stressful stretches. Reps show on the dashboard. If a height dream does come, log it in the next-day check-in — and notice whether any of your rewrite leaked in.</p></div>
+    <button class="btn" onclick="App.go('home')">Done</button>`;
+  }
+};
+
+/* ============ ENJOY MODE ============ */
+const Enjoy = {
+  active:null, timer:null,
+  begin(i,r){
+    Wake.on();
+    this.active={type:'enjoy',ladderRung:i+1,date:new Date().toISOString(),sudBefore:null,sudPeak:0,
+      sudAfter:null,enjoy:null,sudDuring:[],recoverySec:null,bodyMarks:[],reflections:{},win:''};
+    document.getElementById('app').innerHTML=`<div class="eyebrow" style="color:var(--calm)">Enjoy mode · Rung ${i+1}</div>
+    <h1>${r.t}</h1>
+    <div class="card calm"><p>Different goal this time. You've already shown this rung doesn't overwhelm you — now we teach your brain that heights predict something <b>good</b>.</p></div>
+    <div class="card"><h3>Fear right now</h3>${sudSlider('sudB',2)}</div>
+    <button class="btn calmbtn" onclick="Enjoy.reappraise()">Begin</button>
+    <button class="btn ghost" style="margin-top:10px" onclick="App.go('ladder')">Back</button>`;
+    window.scrollTo(0,0);
+  },
+  reappraise(){
+    this.active.sudBefore=sudVal('sudB');
+    if(this.active.sudBefore>=6){ 
+      document.getElementById('app').innerHTML=`<div class="eyebrow">Enjoy mode</div>
+      <h1>Not today — and that's fine</h1>
+      <div class="card"><p>Fear is at ${this.active.sudBefore}. Reappraisal works when arousal is moderate — trying to relabel high fear as excitement doesn't land. Run this rung in regular mode first and come back.</p></div>
+      <button class="btn" onclick="App.go('ladder')">Back to ladder</button>`;
+      return;
+    }
+    document.getElementById('app').innerHTML=`<div class="eyebrow" style="color:var(--calm)">Enjoy · 1 of 4 — Relabel</div>
+    <h1>That's not fear.<br>That's voltage.</h1>
+    <div class="card"><p>Get into position with the material — or the real height. Notice your body switching on: heart rate, alert eyes, tingling. Fear and excitement are the <b>same chemistry</b>. Only the label differs.</p>
+    <p style="margin-top:8px">Say it out loud, even quietly: <b>"I'm excited."</b> Not calm — excited. Let the energy be there and point it forward.</p></div>
+    <button class="btn calmbtn" onclick="Enjoy.awe()">Said it — continue</button>`;
+    Voice.speak('Notice your body switching on. The heart rate. The alertness. That is not danger. That is voltage. Say it out loud: I am excited. Let the energy be there, and point it forward.', true);
+    window.scrollTo(0,0);
+  },
+  awe(){
+    document.getElementById('app').innerHTML=`<div class="eyebrow" style="color:var(--calm)">Enjoy · 2 of 4 — Look outward</div>
+    <h1>Find the thing only this height can show you</h1>
+    <div class="card"><p>Fear looks inward — at your own body. Awe looks outward. Scan slowly. Find one thing that's beautiful, vast, or strange that you could <b>only</b> see from up here: the pattern of streets, the horizon curve, rooftops, tiny moving cars, light on distant ground.</p>
+    <p style="margin-top:8px">Stay with it. Describe it to yourself in detail — colors, movement, scale.</p></div>
+    <button class="btn calmbtn" onclick="Enjoy.savor()">Found it — continue</button>`;
+    Voice.speak('Now look outward. Scan slowly. Find one thing that is beautiful, or vast, or strange, that you could only see from this height. Stay with it. Describe it to yourself. The colors. The movement. The scale.', true);
+    window.scrollTo(0,0);
+  },
+  savor(){
+    let secs=30;
+    document.getElementById('app').innerHTML=`<div class="eyebrow" style="color:var(--calm)">Enjoy · 3 of 4 — Savor</div>
+    <h1>Thirty seconds of staying</h1>
+    <div class="phase-timer" id="ptimer">30</div>
+    <div class="card calm"><p>Don't leave the moment early. Soften your grip, drop your shoulders, breathe low — and just <b>enjoy the view on purpose</b>. If your mind offers the old story, let it pass and come back to what you found.</p></div>
+    <button class="btn danger" onclick="Session.pauseForGrounding()">Ground me</button>`;
+    Voice.speak('Thirty seconds. Do not leave the moment early. Soften your grip. Drop your shoulders. And enjoy the view, on purpose.', true);
+    this.timer&&clearInterval(this.timer);
+    this.timer=setInterval(()=>{ secs--;
+      const pt=document.getElementById('ptimer'); if(!pt){clearInterval(this.timer);return;}
+      pt.textContent=secs;
+      if(secs<=0){ clearInterval(this.timer); this.peakEnd(); }
+    },1000);
+    window.scrollTo(0,0);
+  },
+  peakEnd(){
+    if(navigator.vibrate) navigator.vibrate(60);
+    document.getElementById('app').innerHTML=`<div class="eyebrow" style="color:var(--calm)">Enjoy · 4 of 4 — End on a high note</div>
+    <h1>Choose your last moment</h1>
+    <div class="card"><p>Your memory keeps the <b>peak</b> and the <b>ending</b>. So end deliberately well: take a photo from up here, one more long look at the thing you found, a sip of something, a slow breath with a small smile. Then step away <i>while it still feels good</i> — don't wait for it to sour.</p></div>
+    <div class="card"><h3>Fear now</h3>${sudSlider('sudA',1)}</div>
+    <div class="card"><h3>Enjoyment</h3><div class="sudwrap"><div class="sudval" id="enjV" style="color:var(--calm)">5</div>
+    <div class="sudlabel">0 = nothing · 10 = genuinely loved it</div>
+    <input type="range" min="0" max="10" step="1" value="5" id="enj" oninput="document.getElementById('enjV').textContent=this.value"></div></div>
+    <div class="card"><h3 class="small">Win journal — what was the good moment?</h3>
+    <textarea id="winTxt" placeholder="e.g. Watched the sunset hit the parking garage rail, heart was pounding and I stayed anyway…"></textarea></div>
+    <button class="btn calmbtn" onclick="Enjoy.finish()">Save it</button>`;
+    Voice.speak('Last step. End deliberately well. Take a photo, or one more long look at the thing you found. Then step away while it still feels good.', true);
+    window.scrollTo(0,0);
+  },
+  async finish(){
+    this.active.sudAfter=sudVal('sudA');
+    this.active.enjoy=parseInt(document.getElementById('enj').value);
+    this.active.win=document.getElementById('winTxt').value;
+    this.active.sudPeak=this.active.sudBefore;
+    App.data.sessions.push(this.active);
+    await App.save(); Wake.off();
+    document.getElementById('app').innerHTML=`<div class="eyebrow" style="color:var(--calm)">Saved</div>
+    <h1>${this.active.enjoy>=6?'That\u2019s a height memory that belongs to you now.':'Logged. Enjoyment is a skill — it climbs with reps.'}</h1>
+    <div class="statgrid" style="margin:14px 0">
+      <div class="stat"><div class="bignum">${this.active.sudBefore} → ${this.active.sudAfter}</div><div class="small dim">fear</div></div>
+      <div class="stat"><div class="bignum" style="color:var(--calm)">${this.active.enjoy}</div><div class="small dim">enjoyment</div></div>
+    </div>
+    <button class="btn" onclick="App.go('dash')">See both curves</button>
+    <button class="btn ghost" style="margin-top:10px" onclick="App.go('home')">Done</button>`;
+    this.active=null;
+  }
+};
+
+/* ============ VIEWS ============ */
+const Views = {
+  home(){
+    const ss=App.data.sessions, n=ss.length;
+    const sug=Coach.suggestNext();
+    const last=ss[n-1];
+    if(App.needsCheckin()) return Views.checkin();
+    return `<div class="wordmark"><span class="wm-orb"></span>FEAR RESET <span class="wm-ai">AI</span></div>
+    <h1>Solid ground,<br>one session at a time.</h1>
+    <div class="card" style="margin-top:14px"><div class="eyebrow" style="color:var(--calm)">Suggested next</div>
+      <p style="margin:6px 0 12px">${sug.label}</p>
+      <button class="btn" onclick="${sug.go}">Begin</button></div>
+    <div class="statgrid">
+      <div class="stat"><div class="bignum">${n}</div><div class="small dim">sessions</div></div>
+      <div class="stat"><div class="bignum">${last&&last.sudAfter!=null?last.sudAfter:'–'}</div><div class="small dim">last fear-after</div></div>
+    </div>
+    <div class="card" style="margin-top:14px"><p class="small dim">This is a personal self-help tool, not therapy. The ◉ Reset button is always top-right — using it is a skill, not a retreat.</p></div>`;
+  },
+  checkin(){
+    return `<div class="eyebrow" style="color:var(--calm)">Since your last session</div>
+    <h1>Quick check-in</h1>
+    <p class="dim small" style="margin-bottom:12px">Thirty seconds. This delayed data is what tells us whether the work is actually landing.</p>
+    <div class="card"><h3 class="small">How was your sleep after the session?</h3>
+    <select id="ciSleep"><option>Normal or better</option><option>Slightly worse</option><option>Much worse</option></select></div>
+    <div class="card"><h3 class="small">Did the memory intrude uninvited?</h3>
+    <select id="ciIntr"><option>Not at all</option><option>Once or twice, briefly</option><option>Repeatedly or vividly</option></select></div>
+    <div class="card"><h3 class="small">Overall reactivity since — jumpiness, tension, mood</h3>
+    <select id="ciReact"><option>Calmer than usual</option><option>About normal</option><option>More on edge</option></select></div>
+    <div class="card"><h3 class="small">Any height dreams?</h3>
+    <select id="ciDream"><option>None</option><option>Yes — the old kind (stuck, panicked)</option><option>Yes — but different or calmer</option><option>Yes — my rewritten version showed up</option></select></div>
+    <button class="btn" onclick="Views.saveCheckin()">Save check-in</button>`;
+  },
+  async saveCheckin(){
+    const ss=App.data.sessions.filter(x=>x.type!=='ladder');
+    const last=ss[ss.length-1];
+    last.checkedIn=true;
+    last.nextDay={ sleep:document.getElementById('ciSleep').value,
+      intrusions:document.getElementById('ciIntr').value,
+      reactivity:document.getElementById('ciReact').value,
+      heightDream:document.getElementById('ciDream').value, date:new Date().toISOString() };
+    await App.save();
+    const rough=(last.nextDay.sleep==='Much worse')+(last.nextDay.intrusions==='Repeatedly or vividly')+(last.nextDay.reactivity==='More on edge');
+    if(rough>=2){
+      document.getElementById('app').innerHTML=`<div class="eyebrow">Noted</div>
+      <h1>Worth slowing down</h1>
+      <div class="card"><p>That session left a wake — rough sleep, intrusions, or staying on edge. One rough aftermath is information, not alarm. But if this pattern repeats across two or three sessions, that's the memory telling you it wants a trauma-trained clinician (EMDR) rather than more solo reps.</p>
+      <p class="small dim" style="margin-top:8px">Suggestion: next session should be bilateral-only or a low ladder rung. Skip recall and rewind this week.</p></div>
+      <button class="btn" onclick="App.go('home')">Understood</button>`;
+    } else App.go('home');
+  },
+  session(){
+    return `<div class="eyebrow">Sessions</div><h1>Choose your work</h1>
+    <div class="card"><h3>Guided memory recall</h3><p class="small dim">Timed blocks holding the original memory, ratings between each, hard-capped, ends calm.</p>
+      <button class="btn sm" style="margin-top:10px" onclick="Session.begin('recall')">Start</button></div>
+    <div class="card"><h3>Rewind visualization</h3><p class="small dim">Watch the memory detached from the projection booth, then rewind it fast, three passes.</p>
+      <button class="btn sm" style="margin-top:10px" onclick="Session.begin('rewind')">Start</button></div>
+    <div class="card"><h3>Bilateral stimulation</h3><p class="small dim">Moving orb, alternating tones and vibration. Use standalone or to downshift.</p>
+      <button class="btn sm" style="margin-top:10px" onclick="Session.begin('bilateral')">Start</button></div>
+    <div class="card"><h3>Dream rehearsal</h3><p class="small dim">Rewrite the skyscraper dream so you own the script, then run short voiced rehearsals. The clinical method (IRT) for recurring nightmares.</p>
+      <button class="btn sm calmbtn" style="margin-top:10px" onclick="Dream.begin()">Open</button></div>
+    <div class="card"><h3>Self-hypnosis</h3><p class="small dim">Pick a habit goal — gym persistence, chips, sleep, focus, or your own — and run an 8-minute voiced protocol: induction, deepener, suggestions ×3, future rehearsal, count-up.</p>
+      <button class="btn sm calmbtn" style="margin-top:10px" onclick="Hypno.begin()">Start</button></div>
+    <div class="card"><h3>Settings</h3>
+      <label class="field">Anthropic API key (optional — leave blank when deployed on Vercel with server env var set)</label>
+      <input type="password" id="apiKey" value="${App.data.settings.apiKey||''}" placeholder="sk-ant-…">
+      <label class="field">Backup</label>
+      <div class="row">
+        <button class="btn sm ghost" onclick="Views.exportData()">Export JSON</button>
+        <button class="btn sm ghost" onclick="document.getElementById('impFile').click()">Import</button>
+      </div>
+      <input type="file" id="impFile" accept=".json" style="display:none" onchange="Views.importData(this)">
+      <label class="field">Voice guidance</label>
+      <button class="btn sm ghost" onclick="App.data.settings.voice=!(App.data.settings.voice!==false);App.save();this.textContent='Voice: '+(App.data.settings.voice!==false?'on':'off')">Voice: ${App.data.settings.voice!==false?'on':'off'}</button>
+      <button class="btn sm ghost" style="margin-top:10px" onclick="App.data.settings.apiKey=document.getElementById('apiKey').value;App.save();this.textContent='Saved ✓'">Save</button></div>`;
+  },
+  exportData(){
+    const blob=new Blob([JSON.stringify(App.data,null,1)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='fear-reset-backup-'+new Date().toISOString().slice(0,10)+'.json';
+    a.click(); URL.revokeObjectURL(a.href);
+  },
+  importData(inp){
+    const file=inp.files[0]; if(!file) return;
+    const rd=new FileReader();
+    rd.onload=async()=>{ try{
+      const d=JSON.parse(rd.result);
+      if(!d.sessions) throw new Error('not a Fear Reset backup');
+      if(!confirm('Replace current data with backup from this file? ('+d.sessions.length+' sessions)')) return;
+      App.data=d; await App.save(); App.go('home');
+    }catch(e){ alert('Import failed: '+e.message); } };
+    rd.readAsText(file);
+  },
+  ladder(){
+    const L=App.data.ladder;
+    let firstOpen=LADDER.findIndex((_,i)=>!(L[i]&&L[i].done));
+    if(firstOpen===-1) firstOpen=LADDER.length;
+    return `<div class="eyebrow">Height ladder</div><h1>Rung by rung</h1>
+    <p class="dim small" style="margin-bottom:12px">Each rung pairs the material with paced breathing (feature 7). A rung unlocks when the previous one is done. Repeat rungs as often as you like — repetition is the point.</p>
+    ${LADDER.map((r,i)=>{
+      const st=L[i]||{}, locked=i>firstOpen;
+      const enjoyable=st.done&&st.after<=4;
+      return `<div class="ladder-rung ${st.done?'done':''} ${locked?'locked':''}" ${locked?'':`onclick="Views.openRung(${i})"`}>
+        <div class="rungnum">${i+1}</div><div><div>${r.t}</div><div class="small dim">${r.m}${st.done?` · last fear-after ${st.after}`:''}</div>
+        ${enjoyable?`<button class="btn sm calmbtn" style="margin-top:8px" onclick="event.stopPropagation();Views.openEnjoyRung(${i})">☼ Enjoy mode</button>`:''}</div>
+        ${st.done?'<div class="checkmark">✓</div>':''}</div>`;
+    }).join('')}`;
+  },
+  openRung(i){
+    const r=LADDER[i];
+    document.getElementById('app').innerHTML=`<div class="eyebrow">Ladder · Rung ${i+1}</div>
+    <h1>${r.t}</h1>
+    <div class="orbstage" id="stg"><div class="orb idle" id="orb"></div><div class="stagehint" id="hint"></div></div>
+    <div class="card"><h3>Fear before</h3>${sudSlider('sudB',3)}</div>
+    <div class="card calm"><p>Breathe with the orb while you ${r.m==='imagination'?'hold the scene in your mind':r.m==='real'?'do this in the real world — phone in hand':'view the material on this phone or another screen'}. Stay with it until the fear drops noticeably, then rate below.</p></div>
+    <div class="card"><h3>Fear after</h3>${sudSlider('sudA',2)}</div>
+    <button class="btn" onclick="Views.saveRung(${i})">Save rung</button>
+    <button class="btn ghost" style="margin-top:10px" onclick="App.go('ladder')">Back</button>`;
+    Breath.start('orb','hint');
+    window.scrollTo(0,0);
+  },
+  openEnjoyRung(i){
+    const r=LADDER[i];
+    Enjoy.begin(i,r);
+  },
+  async saveRung(i){
+    Breath.stop();
+    const before=sudVal('sudB'), after=sudVal('sudA');
+    App.data.ladder[i]={done:after<=3, before, after, date:new Date().toISOString()};
+    App.data.sessions.push({type:'ladder',ladderRung:i+1,date:new Date().toISOString(),
+      sudBefore:before,sudPeak:before,sudAfter:after,sudDuring:[],recoverySec:null,bodyMarks:[],reflections:{}});
+    await App.save();
+    App.go('ladder');
+  },
+  body(){
+    return `<div class="eyebrow">Body mapping</div><h1>Where fear lives</h1>
+    <p class="dim small" style="margin-bottom:12px">Marks from your most recent session. You mark these at the end of every recall/rewind session — compare over time in Progress.</p>
+    <div class="card"><div id="bmView"></div></div>
+    <div class="card"><h3 class="small">History</h3>${
+      App.data.sessions.filter(s=>s.bodyMarks&&s.bodyMarks.length).slice(-6).reverse().map(s=>
+        `<p class="small dim" style="margin-top:6px">${App.fmtDate(s.date)} — ${s.bodyMarks.join(', ')}</p>`).join('')||'<p class="small dim">Nothing marked yet.</p>'
+    }</div>`;
+  },
+  dash(){
+    const ss=App.data.sessions;
+    const avgRec=ss.filter(s=>s.recoverySec).map(s=>s.recoverySec);
+    const rungsDone=Object.values(App.data.ladder).filter(r=>r.done).length;
+    return `<div class="eyebrow">Progress</div><h1>The long record</h1>
+    <div class="statgrid" style="margin-bottom:14px">
+      <div class="stat"><div class="bignum">${ss.length}</div><div class="small dim">total sessions</div></div>
+      <div class="stat"><div class="bignum">${rungsDone}/16</div><div class="small dim">ladder rungs</div></div>
+      <div class="stat"><div class="bignum">${avgRec.length?Math.round(avgRec.reduce((a,b)=>a+b)/avgRec.length/60*10)/10+'m':'–'}</div><div class="small dim">avg recovery</div></div>
+      <div class="stat"><div class="bignum">${ss.filter(s=>s.sudAfter!=null&&s.sudBefore!=null&&s.sudAfter<s.sudBefore).length}</div><div class="small dim">sessions w/ drop</div></div>
+    </div>
+    <div class="card"><h3>Fear after each session</h3><canvas class="chart" id="chFear"></canvas></div>
+    <div class="card"><h3>Recovery time (minutes)</h3><canvas class="chart" id="chRec"></canvas></div>
+    <div class="card"><h3>Enjoyment (enjoy-mode sessions)</h3><canvas class="chart" id="chEnj"></canvas></div>
+    <div class="card"><h3>☼ Wins</h3>${ss.filter(s=>s.type==='enjoy'&&s.win).slice(-6).reverse().map(s=>
+      `<p class="small" style="margin-top:8px"><b>${App.fmtDate(s.date)} · rung ${s.ladderRung}</b><br><span class="dim">"${s.win.replace(/</g,'&lt;').slice(0,140)}"</span></p>`).join('')||'<p class="small dim">Your good height memories will collect here.</p>'}</div>
+    ${(()=>{const d=ss.filter(s=>s.type==='dream').length;
+      return d?`<div class="card"><h3>☾ Dream rehearsals</h3><p class="small" style="margin-top:6px">${d} rehearsal${d>1?'s':''} logged</p></div>`:''})()}
+    ${(()=>{const h={};ss.filter(s=>s.type==='hypno').forEach(s=>h[s.goalName]=(h[s.goalName]||0)+1);
+      const e=Object.entries(h);return e.length?`<div class="card"><h3>◈ Hypnosis reps</h3>${e.map(([g,n])=>
+      `<p class="small" style="margin-top:6px"><b>${g}</b> — ${n} session${n>1?'s':''}</p>`).join('')}</div>`:''})()}
+    <div class="card"><h3>Session notes</h3>${ss.slice(-8).reverse().map(s=>
+      `<p class="small" style="margin-top:8px"><b>${App.fmtDate(s.date)} · ${s.type}${s.ladderRung?' r'+s.ladderRung:''}</b> — ${s.sudBefore??'–'}→${s.sudAfter??'–'}${s.reflections&&s.reflections.q1?'<br><span class="dim">“'+s.reflections.q1.slice(0,90)+'”</span>':''}</p>`).join('')||'<p class="small dim">No sessions yet.</p>'}</div>`;
+  },
+  coach(){
+    return `<div class="eyebrow">AI coach</div><h1>What the data says</h1>
+    <div id="coachMsgs">${App.data.coachLog.slice(-10).map(m=>
+      `<div class="msg ${m.role==='ai'?'ai':''}">${m.role==='me'?'<b>You:</b> ':''}${m.text.replace(/</g,'&lt;')}</div>`).join('')||Coach.localPatterns()}</div>
+    <div class="card"><textarea id="coachInp" placeholder="Ask about your patterns, or how last night's session compared…"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="btn sm" onclick="Coach.ask()">Ask coach</button>
+      <button class="btn sm ghost" onclick="Coach.debrief()">Analyze all sessions</button>
+    </div></div>`;
+  }
+};
+
+Stars.start();
+Voice.init();
+App.init();
+</script>
+</body>
+</html>
